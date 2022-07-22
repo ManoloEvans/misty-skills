@@ -1,27 +1,52 @@
 from mistyPy.Robot import Robot
 from mistyPy.Events import Events
-from mistyPy.EventFilters import EventFilters
+import json
 
-misty.start_face_recognition()
+###############################################AUDIO###################################################################
 
+def AudioFunc():
+    misty.RegisterEvent("Introduction", Events.TextToSpeechComplete, keep_alive=False, callback_function=CaptureSpeech)
+    misty.Speak("Hi", utteranceId= 'tts-content')
+    
+    
+def CaptureSpeech(event):
+    misty.RegisterEvent("StartRecord", Events.VoiceRecord, debounce=10000,callback_function=GetFileName)
+    misty.CaptureSpeech(silenceTimeout=1000)
+    
+def GetFileName(event):
+    file_name = event['message']['filename']
 
-def registerFaceDetection ():
-    # Create Register Face Detection here in python.
+# DownloadAudio doesnt currently work
+#def DownloadAudio():
+    #file_name = event['message']['filename']
+    # url = 192.168.128.86/api/audio?FileName=test3_luis.wav
+    #file_name = 'test3_luis.wav'
+    #misty.GetAudioFile(file_name, 'ProcessAudioFile')
+    
+###############################################FACE#########################################################
+    
+def FaceFunc():
+    misty.RegisterEvent(event_name='FaceRecog',event_type=Events.FaceRecognition,callback_function=FaceRecog)
+    misty.StartFaceDetection()
+    misty.StartFaceRecognition()
+    
+def FaceRecog(event):
+    print(event)
+    misty.StopFaceRecognition()
+    misty.StopFaceDetection
+    
 
-def _FaceDetect(data):
-    # Create _FaceDetect here in python.
+###############################################SCRIPTS#########################################################
 
-def _TimeoutToNormal():
-    # Create _timeoutToNormal here in python.
+def GetAudioList():
+    x = json.loads(misty.GetAudioList().text)['result']
+    l = []
+    for i in range(len(x)):
+        if x[i]['systemAsset'] == False:
+            l.append(x[i]['name'])
+    return l
 
-def _VoiceRecord():
-    # Create Voice record function here in python.
+###############################################TEST-CODE#########################################################
 
-def _GetAudioFile():
-    # Create GetAudioFile here in python.
-
-def _SendExternalRequest():
-    # Create SendExternalRequest here in python.
-
-
-
+ip_address = '192.168.128.86'
+misty = Robot(ip_address)
